@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "LinguaFlow - 沉浸式英语学习平台",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "build": "cd client && npm install && npm run build",
     "install:server": "cd server && npm install",
