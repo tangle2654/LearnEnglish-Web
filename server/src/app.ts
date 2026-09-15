@@ -42,6 +42,11 @@ export function createApp() {
     res.json({ ok: true, method: req.method, url: req.url, body: req.body });
   });
 
+  // 直接挂载登录路由（测试 router 挂载是否有问题）
+  app.post('/api/auth/direct-login', (req, res) => {
+    res.json({ ok: true, url: req.url, body: req.body });
+  });
+
   // 挂载路由到 /api/* 和 /* 两个路径
   const mountRoutes = (prefix: string) => {
     app.get(`${prefix}/health`, (req, res) => {
