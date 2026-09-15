@@ -15,67 +15,37 @@ export function createApp() {
   const app = express();
 
   initSchema();
-  seedIfEmpty();
+  seedIfEmpty(); // Vercel /tmp 冷启动时自动灌入种子数据
 
   app.use(cors());
+  app.use(express.json());
 
-  // 调试日志：记录所有请求
+  // 统一处理路径前缀：本地请求带 /api，Vercel 会剥离 /api
   app.use((req, res, next) => {
-    console.log(`[API] ${req.method} ${req.url} content-type=${req.headers['content-type']}`);
+    if (req.url.startsWith('/api')) {
+      req.url = req.url.slice(4) || '/';
+    }
     next();
   });
 
-  // 解析 JSON body，带错误处理
-  app.use(express.json());
-  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (err.type === 'entity.parse.failed') {
-      return res.status(400).json({ error: 'JSON 解析失败' });
-    }
-    next(err);
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok', message: 'LinguaFlow API is running' });
   });
 
-  // 测试 POST 端点
-  app.post('/api/test', (req, res) => {
-    res.json({ ok: true, method: req.method, url: req.url, body: req.body });
-  });
-  app.post('/test', (req, res) => {
-    res.json({ ok: true, method: req.method, url: req.url, body: req.body });
-  });
+  // 路由挂载在根路径（不带 /api 前缀）
+  app.use('/auth', authRoutes);
+  app.use('/courses', courseRoutes);
+  app.use('/vocabulary', vocabRoutes);
+  app.use('/grammar', grammarRoutes);
+  app.use('/listening', listeningRoutes);
+  app.use('/progress', progressRoutes);
+  app.use('/recommendations', recommendRoutes);
+  app.use('/posts', communityRoutes);
+  app.use('/', achievementRoutes);
 
-  // 直接挂载登录路由（测试 router 挂载是否有问题）
-  app.post('/api/auth/direct-login', (req, res) => {
-    res.json({ ok: true, url: req.url, body: req.body });
-  });
-
-  // 挂载路由到 /api/* 和 /* 两个路径
-  const mountRoutes = (prefix: string) => {
-    app.get(`${prefix}/health`, (req, res) => {
-      res.json({ status: 'ok', message: 'LinguaFlow API is running' });
-    });
-    app.use(`${prefix}/auth`, authRoutes);
-    app.use(`${prefix}/courses`, courseRoutes);
-    app.use(`${prefix}/vocabulary`, vocabRoutes);
-    app.use(`${prefix}/grammar`, grammarRoutes);
-    app.use(`${prefix}/listening`, listeningRoutes);
-    app.use(`${prefix}/progress`, progressRoutes);
-    app.use(`${prefix}/recommendations`, recommendRoutes);
-    app.use(`${prefix}/posts`, communityRoutes);
-    app.use(`${prefix}`, achievementRoutes);
-  };
-
-  mountRoutes('/api');
-  mountRoutes('');
-
-  // 404 兜底
-  app.use((req, res) => {
-    console.log(`[404] ${req.method} ${req.url}`);
-    res.status(404).json({ error: `路由不存在: ${req.method} ${req.url}` });
-  });
-
-  // 错误处理
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('[Error]', err);
-    res.status(500).json({ error: '服务器内部错误', detail: err.message });
+    console.error(err.stack);
+    res.status(500).json({ error: '服务器内部错误' });
   });
 
   return app;

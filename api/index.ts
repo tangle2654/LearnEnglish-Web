@@ -2,16 +2,12 @@ import type { Request, Response } from 'express';
 
 export default function handler(req: Request, res: Response) {
   try {
-    // Vercel rewrite 后 req.url 可能变成 /api，需要从 header 获取原始路径
+    // Vercel rewrite 到 /api 后，需从 header 恢复原始路径
     const originalUrl =
       (req.headers['x-now-original-url'] as string) ||
       (req.headers['x-vercel-original-url'] as string) ||
       req.url;
 
-    // 记录请求信息用于调试
-    console.log('[Handler]', req.method, 'url=', req.url, 'original=', originalUrl);
-
-    // 用原始路径替换 req.url，让 Express 能正确路由
     if (originalUrl && originalUrl !== req.url) {
       req.url = originalUrl;
     }
