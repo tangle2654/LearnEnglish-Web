@@ -1,7 +1,8 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 
-const dbPath = path.join(__dirname, '..', 'linguaflow.db');
+// Vercel Serverless 环境下文件系统只读，仅 /tmp 可写；本地开发用项目目录
+const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'linguaflow.db');
 export const db = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');
@@ -166,4 +167,24 @@ export function initSchema() {
       translation TEXT
     );
   `);
+}
+
+/** 检查数据库是否已有种子数据 */
+export function isSeeded(): boolean {
+  const row = db.prepare('SELECT COUNT(*) as count FROM courses').get() as any;
+  return row.count > 0;
+}
+
+/** 如果数据库为空，则灌入种子数据（用于 Vercel Serverless 冷启动 /tmp 场景） */
+export function seedIfEmpty() {
+  if (isSeeded()) return;
+  try {
+    // 动态导入 seed 模块并执行
+    const seed = require('./seed');
+    if (typeof seed.seedDatabase === 'function') {
+      seed.seedDatabase();
+    }
+  } catch (e) {
+    console.error('Seed failed:', e);
+  }
 }

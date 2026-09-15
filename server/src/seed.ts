@@ -6,8 +6,12 @@ initSchema();
 const tables = ['progress', 'completed_lessons', 'user_words', 'comments', 'likes', 'user_badges',
   'posts', 'lessons', 'units', 'courses', 'vocabulary', 'grammar_questions',
   'listening_questions', 'speaking_sentences', 'badges'];
-for (const t of tables) db.exec(`DELETE FROM ${t}`);
-db.exec("DELETE FROM sqlite_sequence WHERE name IN ('" + tables.join("','") + "')");
+
+export function seedDatabase(reset: boolean = false) {
+  if (reset) {
+    for (const t of tables) db.exec(`DELETE FROM ${t}`);
+    db.exec("DELETE FROM sqlite_sequence WHERE name IN ('" + tables.join("','") + "')");
+  }
 
 // ===== Courses (A1-C2) =====
 const courses = [
@@ -316,3 +320,9 @@ console.log(`  Listening questions: ${listeningData.length}`);
 console.log(`  Speaking sentences: ${speakingData.length}`);
 console.log(`  Badges: ${badgeData.length}`);
 console.log(`  Demo user: demo / demo123`);
+}
+
+// 直接运行脚本时执行完整重置+种子
+if (require.main === module) {
+  seedDatabase(true);
+}

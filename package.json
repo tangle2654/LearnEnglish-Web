@@ -1,0 +1,23 @@
+{
+  "name": "linguaflow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LinguaFlow - 沉浸式英语学习平台",
+  "scripts": {
+    "build": "cd client && npm install && npm run build",
+    "install:server": "cd server && npm install",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "typescript": "^5.6.2"
+  }
+}

@@ -33,3 +33,6 @@ yarn-error.log*
 # TRAE internal artifacts
 .trae/
 .trae-html-share-packages/
+
+# User uploads
+.uploads/
