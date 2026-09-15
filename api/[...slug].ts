@@ -1,6 +1,6 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import type { Request, Response } from 'express';
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default function handler(req: Request, res: Response) {
   try {
     const { app } = require('../server/src/app');
     return app(req, res);
@@ -9,7 +9,6 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({
       error: '函数初始化失败',
       detail: err?.message || String(err),
-      stack: err?.stack?.split('\n').slice(0, 5)
     });
   }
 }
