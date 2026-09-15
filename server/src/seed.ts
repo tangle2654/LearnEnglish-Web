@@ -30,7 +30,7 @@ for (const c of courses) {
 }
 
 // ===== Units & Lessons =====
-const unitData: Record<string, string[][]> = {
+const unitData: Record<string, [string, string[]][]> = {
   A1: [
     ['Greetings 问候', ['Hello & Goodbye', 'Introducing Yourself', 'Numbers 1-20']],
     ['Daily Life 日常生活', ['Family Members', 'Daily Routine', 'Food & Drinks']],
