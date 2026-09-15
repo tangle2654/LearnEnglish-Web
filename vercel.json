@@ -10,12 +10,8 @@
       "maxDuration": 30
     }
   },
-  "rewrites": {
-    "beforeFiles": [
-      { "source": "/api/:path*", "destination": "/api/:path" }
-    ],
-    "afterFiles": [
-      { "source": "/:path*", "destination": "/index.html" }
-    ]
-  }
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path" },
+    { "source": "/:path*", "destination": "/index.html" }
+  ]
 }
