@@ -20,19 +20,29 @@ export function createApp() {
   app.use(cors());
   app.use(express.json());
 
-  app.get('/api/health', (req, res) => {
+  // 统一处理路径前缀：本地请求带 /api，Vercel 会剥离 /api
+  // 此中间件确保无论哪种情况，Express 收到的路径都不含 /api 前缀
+  app.use((req, res, next) => {
+    if (req.url.startsWith('/api')) {
+      req.url = req.url.slice(4) || '/';
+    }
+    next();
+  });
+
+  app.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'LinguaFlow API is running' });
   });
 
-  app.use('/api/auth', authRoutes);
-  app.use('/api/courses', courseRoutes);
-  app.use('/api/vocabulary', vocabRoutes);
-  app.use('/api/grammar', grammarRoutes);
-  app.use('/api/listening', listeningRoutes);
-  app.use('/api/progress', progressRoutes);
-  app.use('/api/recommendations', recommendRoutes);
-  app.use('/api/posts', communityRoutes);
-  app.use('/api', achievementRoutes);
+  // 路由挂载在根路径（不带 /api 前缀）
+  app.use('/auth', authRoutes);
+  app.use('/courses', courseRoutes);
+  app.use('/vocabulary', vocabRoutes);
+  app.use('/grammar', grammarRoutes);
+  app.use('/listening', listeningRoutes);
+  app.use('/progress', progressRoutes);
+  app.use('/recommendations', recommendRoutes);
+  app.use('/posts', communityRoutes);
+  app.use('/', achievementRoutes);
 
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error(err.stack);
