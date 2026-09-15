@@ -15,21 +15,34 @@ export function createApp() {
   const app = express();
 
   initSchema();
-  seedIfEmpty(); // Vercel /tmp 冷启动时自动灌入种子数据
+  seedIfEmpty();
 
   app.use(cors());
-  app.use(express.json());
 
-  // 调试：记录实际收到的请求路径（Vercel 函数日志可见）
+  // 调试日志：记录所有请求
   app.use((req, res, next) => {
-    console.log(`[API] ${req.method} ${req.url}`);
+    console.log(`[API] ${req.method} ${req.url} content-type=${req.headers['content-type']}`);
     next();
   });
 
-  // 兼容两种环境：
-  // - 本地开发: URL 为 /api/auth/login
-  // - Vercel: URL 可能为 /auth/login (Vercel 剥离 /api) 或 /api/auth/login
-  // 因此同时挂载到 /api/* 和 /* 两个路径
+  // 解析 JSON body，带错误处理
+  app.use(express.json());
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err.type === 'entity.parse.failed') {
+      return res.status(400).json({ error: 'JSON 解析失败' });
+    }
+    next(err);
+  });
+
+  // 测试 POST 端点
+  app.post('/api/test', (req, res) => {
+    res.json({ ok: true, method: req.method, url: req.url, body: req.body });
+  });
+  app.post('/test', (req, res) => {
+    res.json({ ok: true, method: req.method, url: req.url, body: req.body });
+  });
+
+  // 挂载路由到 /api/* 和 /* 两个路径
   const mountRoutes = (prefix: string) => {
     app.get(`${prefix}/health`, (req, res) => {
       res.json({ status: 'ok', message: 'LinguaFlow API is running' });
@@ -48,14 +61,15 @@ export function createApp() {
   mountRoutes('/api');
   mountRoutes('');
 
-  // 404 兜底，返回实际路径便于排查
+  // 404 兜底
   app.use((req, res) => {
     console.log(`[404] ${req.method} ${req.url}`);
     res.status(404).json({ error: `路由不存在: ${req.method} ${req.url}` });
   });
 
+  // 错误处理
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(err.stack);
+    console.error('[Error]', err);
     res.status(500).json({ error: '服务器内部错误', detail: err.message });
   });
 
